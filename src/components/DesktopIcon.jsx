@@ -6,8 +6,6 @@ const DesktopIcon = ({ id, title, icon, x, y, onDoubleClick }) => {
   const handleClick = () => {
     setIsSelected(true);
     setTimeout(() => setIsSelected(false), 200);
-    // Call the onDoubleClick function on single click for better UX
-    onDoubleClick(id);
   };
 
   const handleDoubleClick = () => {
@@ -49,4 +47,3 @@ const DesktopIcon = ({ id, title, icon, x, y, onDoubleClick }) => {
 };
 
 export default DesktopIcon;
-

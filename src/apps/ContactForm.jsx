@@ -1,33 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser'; // Import EmailJS
 import { FiMail, FiPhone, FiMapPin, FiLinkedin, FiGithub } from 'react-icons/fi';
 
 const ContactForm = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const form = useRef();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In a real application, this would send the email
-    alert('Thank you for your message! I will get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+
+    const serviceID = 'service_zh5ggkx';
+    const templateID = 'template_2hu3yun';
+    const publicKey = 'Gk03eXAIaUVsYpIe9';
+
+    emailjs.sendForm(serviceID, templateID, form.current, publicKey)
+      .then((result) => {
+          console.log('SUCCESS!', result.text);
+          alert('Thank you for your message! It has been sent successfully. ✅');
+          e.target.reset(); // Reset the form fields
+      }, (error) => {
+          console.log('FAILED...', error.text);
+          alert('Failed to send the message, please try again later. ❌');
+      });
+  };
+
+  // This stops the click from bubbling up to the Window component
+  const handleWrapperClick = (e) => {
+    e.stopPropagation();
   };
 
   return (
-    <div className="p-6 h-full bg-white">
+    // Add the onClick handler to this wrapper div
+    <div className="p-6 h-full bg-white" onClick={handleWrapperClick}>
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Get In Touch</h2>
-        <p className="text-gray-600">Let's discuss your next project or collaboration opportunity</p>
+        <p className="text-gray-600">Let's discuss your next project or collaboration opportunity!</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-80 overflow-y-auto">
@@ -104,7 +110,7 @@ const ContactForm = () => {
         {/* Contact Form */}
         <div>
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Send a Message</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form ref={form} onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                 Name
@@ -113,8 +119,6 @@ const ContactForm = () => {
                 type="text"
                 id="name"
                 name="name"
-                value={formData.name}
-                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Your name"
@@ -129,8 +133,6 @@ const ContactForm = () => {
                 type="email"
                 id="email"
                 name="email"
-                value={formData.email}
-                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="your.email@example.com"
@@ -145,8 +147,6 @@ const ContactForm = () => {
                 type="text"
                 id="subject"
                 name="subject"
-                value={formData.subject}
-                onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Project inquiry, collaboration, etc."
@@ -160,8 +160,6 @@ const ContactForm = () => {
               <textarea
                 id="message"
                 name="message"
-                value={formData.message}
-                onChange={handleChange}
                 required
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -183,4 +181,3 @@ const ContactForm = () => {
 };
 
 export default ContactForm;
-
