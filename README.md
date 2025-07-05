@@ -4,7 +4,7 @@ A fully interactive, web-based portfolio designed to look and feel like Apple's 
 
 **Live Demo:** [**https://chanisagithub.github.io/chanisa-macos-portfolio/**](https://chanisagithub.github.io/chanisa-macos-portfolio/)
 
-![image](https://github.com/user-attachments/assets/b3438f42-7a8e-4a64-96c4-b6c86e000940)
+![image](https://media.discordapp.net/attachments/1356563578177716224/1390964813399589007/Screenshot_2025-07-05_at_1.27.21_PM.png?ex=686a2c6e&is=6868daee&hm=6628d586785d7169308f8a22649a823ea82314483b823bbaddfed70aed70fcdc&=&format=webp&quality=lossless&width=2780&height=1456)
 
 
 ## ✨ Features
