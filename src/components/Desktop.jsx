@@ -8,12 +8,13 @@ import ResumeViewer from '../apps/ResumeViewer.jsx';
 import ContactForm from '../apps/ContactForm.jsx';
 import Terminal from '../apps/Terminal.jsx';
 import RecycleBin from '../apps/RecycleBin.jsx';
+import wallpaper from '../assets/macos-background.jpg'; 
 
 const Desktop = () => {
   const { apps, openApp } = useStore();
 
   const desktopIcons = [
-    { id: 'projects', title: 'Project Explorer', icon: '📁', x: 30, y: 60 }, // Adjusted for menu bar
+    { id: 'projects', title: 'Project Explorer', icon: '📁', x: 30, y: 60 },
     { id: 'resume', title: 'Resume.pdf', icon: '📄', x: 30, y: 150 },
     { id: 'contact', title: 'Chat With Me', icon: '💬', x: 30, y: 240 },
     { id: 'terminal', title: 'Terminal', icon: '💻', x: 30, y: 330 },
@@ -41,14 +42,10 @@ const Desktop = () => {
     <div 
       className="h-screen w-screen overflow-hidden relative"
       style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        backgroundImage: `
-          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%)
-        `,
+        backgroundImage: `url(${wallpaper})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         paddingTop: '32px' // Account for menu bar
       }}
     >
