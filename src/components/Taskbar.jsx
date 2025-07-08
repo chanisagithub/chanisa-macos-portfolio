@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaFolder,
+  FaFileAlt,
+  FaComments,
+  FaTerminal,
+  FaTrash,
+  FaApple,
+} from "react-icons/fa";
+import useStore from "../store/index.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,53 +19,105 @@ import {
 
 import { FiWifi, FiBattery, FiSearch, FiSettings } from "react-icons/fi";
 
-import useStore from "../store/index.js";
-
 const Taskbar = () => {
+  const { openApps, openApp, restoreApp } = useStore();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { apps, openApp, minimizeApp } = useStore();
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
   const formatTime = (date) => {
-    const options = {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-    };
-    return date.toLocaleString("en-US", options).replace(",", "");
+    });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const handleMenuClick = (action) => {
     console.log(`Menu item clicked: ${action}`);
   };
 
-  const defaultDockApps = [
-    { id: "resume", title: "Resume Viewer", icon: "📄" },
-    { id: "contact", title: "Contact Form", icon: "💬" },
+  const dockApps = [
+    { id: "finder", name: "Finder", icon: FaFolder, color: "text-blue-500" },
+    {
+      id: "project-explorer",
+      name: "Project Explorer",
+      icon: FaFolder,
+      color: "text-gray-600",
+    },
+    {
+      id: "resume-viewer",
+      name: "Resume Viewer",
+      icon: FaFileAlt,
+      color: "text-blue-600",
+    },
+    {
+      id: "contact-form",
+      name: "Chat With Me",
+      icon: FaComments,
+      color: "text-green-600",
+    },
+    {
+      id: "terminal",
+      name: "Terminal",
+      icon: FaTerminal,
+      color: "text-gray-800",
+    },
+    {
+      id: "recycle-bin",
+      name: "Recycle Bin",
+      icon: FaTrash,
+      color: "text-gray-500",
+    },
   ];
 
-  const openAppIds = apps.map((app) => app.id);
-  const dockApps = [
-    ...defaultDockApps.filter((d) => !openAppIds.includes(d.id)),
-    ...apps,
-  ];
+  const handleAppClick = (appId) => {
+    const app = openApps.find((app) => app.id === appId);
+    if (app && app.minimized) {
+      restoreApp(appId);
+    } else {
+      openApp(appId);
+    }
+  };
+
+  const isAppOpen = (appId) => {
+    return openApps.some((app) => app.id === appId);
+  };
+
+  const isAppMinimized = (appId) => {
+    const app = openApps.find((app) => app.id === appId);
+    return app && app.minimized;
+  };
 
   return (
     <>
-      {/* Top Menu Bar */}
-      <div className="absolute top-0 left-0 right-0 h-8 bg-black/20 backdrop-blur-lg text-white text-sm flex items-center justify-between px-4 z-50">
+      {/* Menu Bar */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-8 bg-black/20 backdrop-blur-lg text-white text-sm flex items-center justify-between px-4 z-50"
+        initial={{ y: -32 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {/* Left-aligned items */}
         <div className="flex items-center space-x-4">
-          <div className="text-xl font-semibold"></div>
-          <div className="font-bold">Chanisa's Portfolio</div>
+          <FaApple className="text-white text-sm" />
+          <span className="text-white text-sm font-medium">
+            Chanisa's Portfolio OS
+          </span>
           <DropdownMenu>
             <DropdownMenuTrigger className="outline-none">
               File
@@ -100,75 +162,101 @@ const Taskbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Right-aligned items */}
         <div className="flex items-center space-x-4">
           <FiBattery />
           <FiWifi />
           <FiSearch />
           <FiSettings />
-          <div className="font-sans">{formatTime(currentTime)}</div>
-        </div>
-      </div>
-
-      {/* Bottom Dock */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-        <div className="flex items-end h-[70px] space-x-2 p-2 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg">
-          {/* Static Finder Icon */}
-          <div className="relative group">
-            <button
-              onClick={() => openApp("projects")}
-              className="w-14 h-14 bg-gray-500/50 rounded-xl flex items-center justify-center text-4xl hover:scale-110 transition-transform duration-200"
-            >
-              {"📁"}
-            </button>
-            {apps.find((app) => app.id === "projects" && !app.minimized) && (
-              <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full"></div>
-            )}
-            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/70 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              Project Explorer
-            </div>
-          </div>
-
-          {/* Dynamically added apps */}
-          {dockApps.map((app) => (
-            <div key={app.id} className="relative group">
-              <button
-                onClick={() => {
-                  openApp(app.id);
-                  if (apps.find((a) => a.id === app.id)?.minimized)
-                    minimizeApp(app.id);
-                }}
-                className="w-14 h-14 bg-gray-500/50 rounded-xl flex items-center justify-center text-4xl hover:scale-110 transition-transform duration-200"
-              >
-                {app.icon}
-              </button>
-              {apps.find((a) => a.id === app.id && !a.minimized) && (
-                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full"></div>
-              )}
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/70 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                {app.title}
-              </div>
-            </div>
-          ))}
-
-          {/* Separator */}
-          <div className="h-14 w-px bg-white/20 mx-2"></div>
-
-          <div className="relative group">
-            <button
-              onClick={() => openApp("recycle")}
-              className="w-14 h-14 bg-gray-500/50 rounded-xl flex items-center justify-center text-4xl hover:scale-110 transition-transform duration-200"
-            >
-              {"🗑️"}
-            </button>
-            {apps.find((app) => app.id === "recycle" && !app.minimized) && (
-              <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full"></div>
-            )}
-            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/70 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              Recycle Bin
-            </div>
+          <div className="text-white text-sm">
+            {formatDate(currentTime)} {formatTime(currentTime)}
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Dock */}
+      <motion.div
+        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+      >
+        <motion.div
+          className="bg-white/20 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white/30 shadow-2xl"
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="flex items-center space-x-2">
+            <AnimatePresence>
+              {dockApps.map((app, index) => {
+                const IconComponent = app.icon;
+                const isOpen = isAppOpen(app.id);
+                const isMinimized = isAppMinimized(app.id);
+
+                return (
+                  <motion.div
+                    key={app.id}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: index * 0.1,
+                      ease: "easeOut",
+                    }}
+                    className="relative"
+                  >
+                    <motion.button
+                      onClick={() => handleAppClick(app.id)}
+                      className={`
+                        w-12 h-12 rounded-xl flex items-center justify-center
+                        bg-white/80 backdrop-blur-sm border border-white/50
+                        hover:bg-white/90 transition-all duration-200
+                        ${isOpen ? "ring-2 ring-blue-400/50" : ""}
+                        ${isMinimized ? "opacity-60" : ""}
+                      `}
+                      whileHover={{
+                        scale: 1.1,
+                        y: -8,
+                        transition: { duration: 0.2, ease: "easeOut" },
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      title={app.name}
+                    >
+                      <IconComponent className={`text-xl ${app.color}`} />
+                    </motion.button>
+
+                    {/* Active indicator */}
+                    <AnimatePresence>
+                      {isOpen && !isMinimized && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-gray-700 rounded-full"
+                        />
+                      )}
+                    </AnimatePresence>
+
+                    {/* Minimized indicator */}
+                    <AnimatePresence>
+                      {isMinimized && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-1 bg-yellow-500 rounded-full"
+                        />
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+      </motion.div>
     </>
   );
 };

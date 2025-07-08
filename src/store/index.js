@@ -4,117 +4,146 @@ import { persist } from 'zustand/middleware';
 const useStore = create(
   persist(
     (set, get) => ({
-      apps: [],
+      openApps: [],
       nextZIndex: 1000,
 
       openApp: (appId) => {
-        const { apps, nextZIndex } = get();
-        const existingApp = apps.find(app => app.id === appId);
+        const { openApps, nextZIndex } = get();
+        const existingApp = openApps.find(app => app.id === appId);
         
         if (existingApp) {
-          // If app exists, bring it to front and unminimize if needed
-          set({
-            apps: apps.map(app => 
-              app.id === appId 
-                ? { ...app, zIndex: nextZIndex, minimized: false }
-                : app
-            ),
-            nextZIndex: nextZIndex + 1
-          });
+          // If app exists but is minimized, restore it
+          if (existingApp.minimized) {
+            set({
+              openApps: openApps.map(app =>
+                app.id === appId
+                  ? { ...app, minimized: false, zIndex: nextZIndex }
+                  : app
+              ),
+              nextZIndex: nextZIndex + 1
+            });
+          } else {
+            // Just bring to front
+            set({
+              openApps: openApps.map(app =>
+                app.id === appId
+                  ? { ...app, zIndex: nextZIndex }
+                  : app
+              ),
+              nextZIndex: nextZIndex + 1
+            });
+          }
         } else {
           // Create new app window
-          const appConfig = {
-            projects: { title: 'Project Explorer', icon: '📁' },
-            resume: { title: 'Resume Viewer', icon: '📄' },
-            contact: { title: 'Contact Form', icon: '💬' },
-            terminal: { title: 'Terminal', icon: '💻' },
-            recycle: { title: 'Recycle Bin', icon: '🗑️' }
-          };
-
-          const config = appConfig[appId] || { title: 'Unknown App', icon: '❓' };
-          
           const newApp = {
             id: appId,
-            title: config.title,
-            icon: config.icon,
-            position: { x: 100 + (apps.length * 30), y: 100 + (apps.length * 30) },
-            size: { width: 600, height: 400 },
+            name: getAppName(appId),
+            position: { x: 100 + (openApps.length * 30), y: 100 + (openApps.length * 30) },
+            size: { width: 800, height: 600 },
             zIndex: nextZIndex,
-            minimized: false,
-            maximized: false
+            maximized: false,
+            minimized: false
           };
-
+          
           set({
-            apps: [...apps, newApp],
+            openApps: [...openApps, newApp],
             nextZIndex: nextZIndex + 1
           });
         }
       },
 
       closeApp: (appId) => {
-        set(state => ({
-          apps: state.apps.filter(app => app.id !== appId)
-        }));
+        const { openApps } = get();
+        set({
+          openApps: openApps.filter(app => app.id !== appId)
+        });
       },
 
       minimizeApp: (appId) => {
-        set(state => ({
-          apps: state.apps.map(app => 
-            app.id === appId 
-              ? { ...app, minimized: !app.minimized }
+        const { openApps } = get();
+        set({
+          openApps: openApps.map(app =>
+            app.id === appId
+              ? { ...app, minimized: true }
               : app
           )
-        }));
+        });
+      },
+
+      restoreApp: (appId) => {
+        const { openApps, nextZIndex } = get();
+        set({
+          openApps: openApps.map(app =>
+            app.id === appId
+              ? { ...app, minimized: false, zIndex: nextZIndex }
+              : app
+          ),
+          nextZIndex: nextZIndex + 1
+        });
       },
 
       maximizeApp: (appId) => {
-        set(state => ({
-          apps: state.apps.map(app => 
-            app.id === appId 
+        const { openApps } = get();
+        set({
+          openApps: openApps.map(app =>
+            app.id === appId
               ? { ...app, maximized: !app.maximized }
               : app
           )
-        }));
+        });
+      },
+
+      updateAppPosition: (appId, x, y) => {
+        const { openApps } = get();
+        set({
+          openApps: openApps.map(app =>
+            app.id === appId
+              ? { ...app, position: { x, y } }
+              : app
+          )
+        });
+      },
+
+      updateAppSize: (appId, width, height) => {
+        const { openApps } = get();
+        set({
+          openApps: openApps.map(app =>
+            app.id === appId
+              ? { ...app, size: { width, height } }
+              : app
+          )
+        });
       },
 
       bringAppToFront: (appId) => {
-        const { nextZIndex } = get();
-        set(state => ({
-          apps: state.apps.map(app => 
-            app.id === appId 
+        const { openApps, nextZIndex } = get();
+        set({
+          openApps: openApps.map(app =>
+            app.id === appId
               ? { ...app, zIndex: nextZIndex }
               : app
           ),
           nextZIndex: nextZIndex + 1
-        }));
-      },
-
-      updateAppPosition: (appId, x, y) => {
-        set(state => ({
-          apps: state.apps.map(app => 
-            app.id === appId 
-              ? { ...app, position: { x, y } }
-              : app
-          )
-        }));
-      },
-
-      updateAppSize: (appId, width, height) => {
-        set(state => ({
-          apps: state.apps.map(app => 
-            app.id === appId 
-              ? { ...app, size: { width, height } }
-              : app
-          )
-        }));
+        });
       }
     }),
     {
       name: 'desktop-os-storage',
-      partialize: (state) => ({ apps: state.apps })
+      partialize: (state) => ({ openApps: state.openApps })
     }
   )
 );
+
+function getAppName(appId) {
+  const appNames = {
+    'project-explorer': 'Project Explorer',
+    'resume-viewer': 'Resume Viewer',
+    'contact-form': 'Chat With Me',
+    'terminal': 'Terminal',
+    'recycle-bin': 'Recycle Bin',
+  };
+  return appNames[appId] || 'Unknown App';
+}
 
 export default useStore;
 

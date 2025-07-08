@@ -1,85 +1,101 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import DesktopIcon from './DesktopIcon';
+import Taskbar from './Taskbar';
+import Window from './Window';
+import ProjectExplorer from '../apps/ProjectExplorer';
+import ResumeViewer from '../apps/ResumeViewer';
+import ContactForm from '../apps/ContactForm';
+import Terminal from '../apps/Terminal';
+import RecycleBin from '../apps/RecycleBin';
 import useStore from '../store/index.js';
-import Taskbar from './Taskbar.jsx';
-import DesktopIcon from './DesktopIcon.jsx';
-import Window from './Window.jsx';
-import ProjectExplorer from '../apps/ProjectExplorer.jsx';
-import ResumeViewer from '../apps/ResumeViewer.jsx';
-import ContactForm from '../apps/ContactForm.jsx';
-import Terminal from '../apps/Terminal.jsx';
-import RecycleBin from '../apps/RecycleBin.jsx';
-import wallpaper from '../assets/macos-background.jpg'; 
 
 const Desktop = () => {
-  const { apps, openApp } = useStore();
+  const { openApps } = useStore();
 
   const desktopIcons = [
-    { id: 'projects', title: 'Project Explorer', icon: '📁', x: 30, y: 60 },
-    { id: 'resume', title: 'Resume.pdf', icon: '📄', x: 30, y: 150 },
-    { id: 'contact', title: 'Chat With Me', icon: '💬', x: 30, y: 240 },
-    { id: 'terminal', title: 'Terminal', icon: '💻', x: 30, y: 330 },
-    { id: 'recycle', title: 'Recycle Bin', icon: '🗑️', x: 30, y: 420 }
+    { id: 'project-explorer', name: 'Project Explorer', icon: '📁', x: 30, y: 100 },
+    { id: 'resume-viewer', name: 'Resume Viewer', icon: '📄', x: 30, y: 200 },
+    { id: 'contact-form', name: 'Chat With Me', icon: '💬', x: 30, y: 300 },
+    { id: 'terminal', name: 'Terminal', icon: '💻', x: 30, y: 400 },
+    { id: 'recycle-bin', name: 'Recycle Bin', icon: '🗑️', x: 30, y: 500 }
   ];
 
-  const renderAppContent = (appId) => {
+  const getAppComponent = (appId) => {
     switch (appId) {
-      case 'projects':
+      case 'project-explorer':
         return <ProjectExplorer />;
-      case 'resume':
+      case 'resume-viewer':
         return <ResumeViewer />;
-      case 'contact':
+      case 'contact-form':
         return <ContactForm />;
       case 'terminal':
         return <Terminal />;
-      case 'recycle':
+      case 'recycle-bin':
         return <RecycleBin />;
       default:
-        return <div>Unknown application</div>;
+        return <div>App not found</div>;
     }
   };
 
   return (
-    <div 
-      className="h-screen w-screen overflow-hidden relative"
-      style={{
-        backgroundImage: `url(${wallpaper})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        paddingTop: '32px' // Account for menu bar
-      }}
+    <motion.div 
+      className="h-screen w-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 relative overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
+      {/* Background overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/5 to-black/20" />
+      
       {/* Desktop Icons */}
-      {desktopIcons.map(icon => (
-        <DesktopIcon
-          key={icon.id}
-          id={icon.id}
-          title={icon.title}
-          icon={icon.icon}
-          x={icon.x}
-          y={icon.y}
-          onDoubleClick={openApp}
-        />
-      ))}
+      <motion.div 
+        className="absolute inset-0 pt-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        {desktopIcons.map((icon, index) => (
+          <motion.div
+            key={icon.id}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ 
+              delay: 0.5 + (index * 0.1), 
+              duration: 0.3,
+              ease: "easeOut"
+            }}
+          >
+            <DesktopIcon
+              id={icon.id}
+              name={icon.name}
+              icon={icon.icon}
+              x={icon.x}
+              y={icon.y}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
 
       {/* Windows */}
-      {apps.filter(app => !app.minimized).map(app => (
+      {openApps.map((app) => (
         <Window
           key={app.id}
           id={app.id}
-          title={app.title}
+          title={app.name}
           position={app.position}
           size={app.size}
           zIndex={app.zIndex}
           maximized={app.maximized}
+          minimized={app.minimized}
         >
-          {renderAppContent(app.id)}
+          {getAppComponent(app.id)}
         </Window>
       ))}
 
-      {/* Menu Bar and Dock */}
+      {/* Taskbar */}
       <Taskbar />
-    </div>
+    </motion.div>
   );
 };
 
