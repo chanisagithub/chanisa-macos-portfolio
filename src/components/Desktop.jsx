@@ -48,23 +48,18 @@ const Desktop = () => {
 
   return (
     <motion.div
-      className="h-screen w-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 relative overflow-hidden"
+      className="h-screen w-screen  relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${wallpaper})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        paddingTop: "0px",
+      }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      exit={{ opacity: 0 }}
     >
-      {/* Background overlay for depth */}
-      <div
-        className="h-screen w-screen overflow-hidden relative"
-        style={{
-          backgroundImage: `url(${wallpaper})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          paddingTop: "0px",
-        }}
-      />
-
       {/* Desktop Icons */}
       <motion.div
         className="absolute inset-0 pt-10"
