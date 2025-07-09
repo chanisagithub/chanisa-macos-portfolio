@@ -114,7 +114,7 @@ const Taskbar = () => {
       >
         {/* Left-aligned items */}
         <div className="flex items-center space-x-4">
-          <FaApple className="text-white text-sm" />
+          <FaApple className="text-white text-xl" />
           <span className="text-white text-sm font-medium">
             Chanisa's Portfolio OS
           </span>
